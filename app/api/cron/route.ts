@@ -39,6 +39,14 @@ export async function GET(request: Request) {
       );
       if (filtered.length > 0) {
         await sendJobEmail(sub.email, sub.role, filtered, sub.id);
+        await supabase.from("job_alert_history").insert({
+          user_id: sub.user_id,
+          subscriber_id: sub.id,
+          email: sub.email,
+          role: sub.role,
+          jobs: filtered,
+          job_count: filtered.length,
+        });
         sent++;
       }
     } catch (err) {
