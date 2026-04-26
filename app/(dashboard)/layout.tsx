@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import SidebarNav from "@/components/sidebar-nav";
+import BottomNav from "@/components/bottom-nav";
 import DashboardSignupCompleteTracker from "@/components/analytics/dashboard-signup-complete-tracker";
 
 export default async function DashboardLayout({
@@ -41,7 +42,7 @@ export default async function DashboardLayout({
             </p>
           </div>
         </aside>
-        <main className="relative flex-1 overflow-y-auto">
+        <main className="relative flex-1 overflow-y-auto pb-16 md:pb-0">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-primary/[0.06] to-transparent" />
           <div className="relative">
             <DashboardSignupCompleteTracker />
@@ -49,6 +50,7 @@ export default async function DashboardLayout({
           </div>
         </main>
       </div>
+      <BottomNav />
     </div>
   );
 }
