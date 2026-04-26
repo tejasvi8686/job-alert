@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
 
 export default function TestEmailButton() {
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [message, setMessage] = useState("");
 
   async function handleTest() {
@@ -23,32 +24,31 @@ export default function TestEmailButton() {
       }
 
       setStatus("success");
-      setMessage("Test email sent! Check your inbox.");
+      setMessage("Sent — check your inbox");
     } catch {
       setStatus("error");
-      setMessage("Network error. Please try again.");
+      setMessage("Network error");
     }
   }
 
   return (
     <div className="flex items-center gap-3">
-      <Button
+      <button
         onClick={handleTest}
         disabled={status === "loading"}
-        variant="outline"
-        className="gap-2"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
       >
-        <Mail className="h-4 w-4" />
-        {status === "loading" ? "Sending..." : "Send Test Email"}
-      </Button>
+        <Mail className="h-3.5 w-3.5" strokeWidth={1.5} />
+        {status === "loading" ? "Sending..." : "Send a test email"}
+      </button>
       {message && (
-        <p
-          className={`text-sm ${
-            status === "success" ? "text-emerald-600" : "text-destructive"
+        <span
+          className={`text-xs ${
+            status === "success" ? "text-[#4A7A62]" : "text-destructive"
           }`}
         >
           {message}
-        </p>
+        </span>
       )}
     </div>
   );
