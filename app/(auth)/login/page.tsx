@@ -1,5 +1,17 @@
+import { Suspense } from "react";
 import LoginForm from "./login-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+function LoginFormFallback() {
+  return (
+    <div className="space-y-4">
+      <div className="h-9 w-full animate-pulse rounded-lg bg-muted/70" />
+      <div className="h-4 w-full animate-pulse rounded bg-muted/50" />
+      <div className="h-4 w-full animate-pulse rounded bg-muted/50" />
+      <div className="h-9 w-full animate-pulse rounded-lg bg-muted/70" />
+    </div>
+  );
+}
 
 export default function LoginPage() {
   return (
@@ -41,7 +53,9 @@ export default function LoginPage() {
             <CardDescription>Sign in to continue to your dashboard.</CardDescription>
           </CardHeader>
           <CardContent>
-            <LoginForm />
+            <Suspense fallback={<LoginFormFallback />}>
+              <LoginForm />
+            </Suspense>
           </CardContent>
         </Card>
       </div>
