@@ -33,11 +33,11 @@ export async function verifyOtp(email: string, token: string) {
     return { error: error.message };
   }
 
-  redirect("/");
+  redirect("/dashboard");
 }
 
 export async function logOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/login");
+  redirect("/");
 }

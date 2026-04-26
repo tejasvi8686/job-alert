@@ -3,7 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 @AGENTS.md
-
+claude --resume "dashboard-implementation" 
 ## Build & Development Commands
 
 - `npm run dev` — start dev server

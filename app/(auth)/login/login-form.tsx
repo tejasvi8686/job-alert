@@ -1,21 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { sendOtp, verifyOtp } from "@/app/actions/auth";
 import { createClient } from "@/lib/supabase-browser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { trackEvent } from "@/lib/analytics";
+
+const START_KEY = "ja_signup_started_at";
+const SOURCE_KEY = "ja_signup_source";
 
 export default function LoginForm() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"email" | "otp">("email");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const prefillEmail = searchParams.get("email");
+    if (prefillEmail) {
+      setEmail(prefillEmail);
+    }
+  }, [searchParams]);
+
   async function handleGoogleSignIn() {
+    const source = searchParams.get("source") ?? "login_page";
+    sessionStorage.setItem(START_KEY, String(Date.now()));
+    sessionStorage.setItem(SOURCE_KEY, source);
+    trackEvent("landing_signup_start", {
+      source,
+      method: "google_oauth",
+    });
+
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -29,6 +50,14 @@ export default function LoginForm() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    const source = searchParams.get("source") ?? "login_page";
+
+    sessionStorage.setItem(START_KEY, String(Date.now()));
+    sessionStorage.setItem(SOURCE_KEY, source);
+    trackEvent("landing_signup_start", {
+      source,
+      method: "email_otp",
+    });
 
     const result = await sendOtp(email);
     if (result?.error) {
@@ -44,6 +73,10 @@ export default function LoginForm() {
     setLoading(true);
     setError("");
 
+    trackEvent("landing_otp_verify_attempt", {
+      source: searchParams.get("source") ?? "login_page",
+    });
+
     const result = await verifyOtp(email, otp);
     if (result?.error) {
       setError(result.error);
@@ -53,28 +86,34 @@ export default function LoginForm() {
 
   if (step === "otp") {
     return (
-      <form onSubmit={handleVerifyOtp} className="flex flex-col gap-4">
-        <p className="text-sm text-muted-foreground">
-          We sent a code to <span className="font-medium text-foreground">{email}</span>
-        </p>
-        <div className="space-y-2">
-          <Label htmlFor="otp">Verification code</Label>
-          <Input
-            id="otp"
-            type="text"
-            inputMode="numeric"
-            placeholder="Enter 8-digit code"
-            required
-            maxLength={8}
-            value={otp}
-            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-            className="h-10 text-center text-lg tracking-widest"
-          />
+      <form onSubmit={handleVerifyOtp} className="flex flex-col gap-5">
+        <div className="rounded-xl border border-border/60 bg-background/70 p-4">
+          <p className="text-sm text-muted-foreground">
+            We sent a code to{" "}
+            <span className="font-medium text-foreground">{email}</span>
+          </p>
+          <div className="mt-4 space-y-1.5">
+            <Label
+              htmlFor="otp"
+              className="text-[11px] uppercase tracking-[0.14em]"
+            >
+              Verification code
+            </Label>
+            <Input
+              id="otp"
+              type="text"
+              inputMode="numeric"
+              placeholder="Enter 8-digit code"
+              required
+              maxLength={8}
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+              className="h-10 text-center text-lg tracking-[0.25em]"
+            />
+          </div>
         </div>
 
-        {error && (
-          <p className="text-sm text-destructive">{error}</p>
-        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
         <Button type="submit" disabled={loading} size="lg" className="w-full">
           {loading ? "Verifying..." : "Verify"}
@@ -83,7 +122,11 @@ export default function LoginForm() {
         <Button
           type="button"
           variant="link"
-          onClick={() => { setStep("email"); setOtp(""); setError(""); }}
+          onClick={() => {
+            setStep("email");
+            setOtp("");
+            setError("");
+          }}
         >
           Use a different email
         </Button>
@@ -92,11 +135,11 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <Button
         variant="outline"
         size="lg"
-        className="w-full gap-3"
+        className="w-full gap-3 bg-background/70"
         onClick={handleGoogleSignIn}
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -110,13 +153,23 @@ export default function LoginForm() {
 
       <div className="flex items-center gap-3">
         <Separator className="flex-1" />
-        <span className="text-xs text-muted-foreground">or</span>
+        <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+          or
+        </span>
         <Separator className="flex-1" />
       </div>
 
-      <form onSubmit={handleSendOtp} className="flex flex-col gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+      <form
+        onSubmit={handleSendOtp}
+        className="flex flex-col gap-4 rounded-xl border border-border/60 bg-background/70 p-4"
+      >
+        <div className="space-y-1.5">
+          <Label
+            htmlFor="email"
+            className="text-[11px] uppercase tracking-[0.14em]"
+          >
+            Email
+          </Label>
           <Input
             id="email"
             type="email"
@@ -128,9 +181,7 @@ export default function LoginForm() {
           />
         </div>
 
-        {error && (
-          <p className="text-sm text-destructive">{error}</p>
-        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
         <Button type="submit" disabled={loading} size="lg" className="w-full">
           {loading ? "Sending code..." : "Send code"}

@@ -53,6 +53,7 @@ export async function filterJobsWithAI(
 
 Filter and return only the most relevant jobs for:
 Role: "${role}"
+
 Location: "${location}"
 Skills: "${skill}"
 
