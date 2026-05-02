@@ -12,7 +12,21 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { email, role, skill, location } = body;
+  const {
+    email,
+    role,
+    profileName = "Main profile",
+    skill,
+    location,
+    experienceLevel = "Mid",
+    yearsExperience = 2,
+    jobType = "Full-time",
+    minSalary = null,
+    salaryCurrency = "USD",
+    alertFrequency = "Daily",
+    minMatchScore = 60,
+    maxJobsPerEmail = 5,
+  } = body;
 
   if (!email || !role || !skill || !location) {
     return Response.json(
@@ -23,7 +37,23 @@ export async function POST(request: Request) {
 
   const { error } = await supabase
     .from("user_roles")
-    .insert({ email, role, skill, location, user_id: user.id });
+    .insert({
+      email,
+      profile_name: profileName,
+      role,
+      skill,
+      location,
+      user_id: user.id,
+      experience_level: experienceLevel,
+      years_experience: yearsExperience,
+      job_type: jobType,
+      min_salary: minSalary,
+      salary_currency: salaryCurrency,
+      alert_frequency: alertFrequency,
+      min_match_score: minMatchScore,
+      max_jobs_per_email: maxJobsPerEmail,
+      alerts_paused: false,
+    });
 
   if (error) {
     if (error.code === "23505") {

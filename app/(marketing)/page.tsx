@@ -64,7 +64,9 @@ export default async function LandingPage() {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       serviceRoleKey
     );
-    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const oneWeekAgoDate = new Date();
+    oneWeekAgoDate.setDate(oneWeekAgoDate.getDate() - 7);
+    const oneWeekAgo = oneWeekAgoDate.toISOString();
     const { count } = await adminClient
       .from("job_alert_history")
       .select("id", { count: "exact", head: true })

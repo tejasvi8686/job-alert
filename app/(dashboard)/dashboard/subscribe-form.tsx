@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,13 +64,22 @@ export default function SubscribeForm({ email }: { email: string }) {
       if (!res.ok) {
         setStatus("error");
         setErrorMsg(data.error || "Something went wrong");
+        toast.error("Could not create alert", {
+          description: data.error || "Something went wrong",
+        });
         return;
       }
 
       setStatus("success");
+      toast.success("Alert profile created", {
+        description: "Your first alert arrives at 9:00 AM UTC tomorrow.",
+      });
     } catch {
       setStatus("error");
       setErrorMsg("Network error. Please try again.");
+      toast.error("Network error", {
+        description: "Could not create your alert profile. Try again.",
+      });
     }
   }
 

@@ -27,6 +27,13 @@ export async function POST() {
     );
   }
 
+  if (subscription.alerts_paused) {
+    return Response.json(
+      { error: "Alerts are paused. Resume alerts in settings first." },
+      { status: 400 }
+    );
+  }
+
   // Rate limit: 1 test per hour
   const serviceSupabase = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -50,12 +57,25 @@ export async function POST() {
 
   try {
     const jobs = await fetchJobs();
-    const filtered = await filterJobsWithAI(
-      jobs,
-      subscription.role,
-      subscription.location,
-      subscription.skill
-    );
+    const filtered = await filterJobsWithAI(jobs, {
+      role: subscription.role,
+      location: subscription.location,
+      skill: subscription.skill,
+      experienceLevel: subscription.experience_level,
+      yearsExperience: subscription.years_experience,
+      jobType: subscription.job_type,
+      minSalary: subscription.min_salary,
+      salaryCurrency: subscription.salary_currency,
+      minMatchScore: subscription.min_match_score,
+      maxJobsPerEmail: subscription.max_jobs_per_email,
+      resumeText: subscription.resume_text,
+      linkedinUrl: subscription.linkedin_url,
+      githubUrl: subscription.github_url,
+      portfolioUrl: subscription.portfolio_url,
+      preferredKeywords: subscription.preferred_keywords,
+      excludedKeywords: subscription.excluded_keywords,
+      hiddenCompanies: subscription.hidden_companies,
+    });
 
     if (filtered.length === 0) {
       return Response.json(

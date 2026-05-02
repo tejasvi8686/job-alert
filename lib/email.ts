@@ -14,6 +14,13 @@ function getMatchColor(score: string | number): string {
 
 function buildJobHtml(job: FilteredJob, index: number): string {
   const color = getMatchColor(job.match_score);
+  const dashboardUrl = `${BASE_URL}/dashboard/history`;
+  const meta = [job.source, job.job_type, job.salary].filter(Boolean).join(" · ");
+  const missingSkills =
+    job.missing_skills && job.missing_skills.length > 0
+      ? job.missing_skills.join(", ")
+      : "";
+
   return `
     <tr>
       <td style="padding: 20px 24px; border-bottom: 1px solid #f0f0f0;">
@@ -29,6 +36,11 @@ function buildJobHtml(job: FilteredJob, index: number): string {
               <p style="margin: 0 0 12px; font-size: 14px; color: #71717a;">
                 ${job.company} &middot; ${job.location}
               </p>
+              ${
+                meta
+                  ? `<p style="margin: -6px 0 12px; font-size: 12px; color: #a1a1aa;">${meta}</p>`
+                  : ""
+              }
               <table cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
                   <td style="padding: 3px 10px; border-radius: 100px; background: ${color}15; border: 1px solid ${color}30;">
@@ -37,14 +49,22 @@ function buildJobHtml(job: FilteredJob, index: number): string {
                 </tr>
               </table>
               <p style="margin: 8px 0 0; font-size: 13px; color: #52525b; line-height: 1.5;">
-                ${job.reason}
+                ${job.fit_summary || job.reason}
               </p>
+              ${
+                missingSkills
+                  ? `<p style="margin: 8px 0 0; font-size: 12px; color: #71717a; line-height: 1.5;"><strong>Missing skills:</strong> ${missingSkills}</p>`
+                  : ""
+              }
             </td>
           </tr>
           <tr>
             <td style="padding-top: 12px;">
               <a href="${job.apply_link}" style="display: inline-block; padding: 8px 20px; background: #18181b; color: #ffffff; font-size: 13px; font-weight: 500; text-decoration: none; border-radius: 6px;">
                 Apply Now
+              </a>
+              <a href="${dashboardUrl}" style="display: inline-block; margin-left: 8px; padding: 8px 14px; background: #ffffff; color: #18181b; border: 1px solid #e5e7eb; font-size: 13px; font-weight: 500; text-decoration: none; border-radius: 6px;">
+                Save or give feedback
               </a>
             </td>
           </tr>
@@ -125,7 +145,7 @@ export async function sendJobEmail(
   const jobList = jobs
     .map(
       (job, i) =>
-        `${i + 1}. ${job.title} at ${job.company}\n   Location: ${job.location}\n   Match: ${job.match_score}%\n   Reason: ${job.reason}\n   Apply: ${job.apply_link}`
+        `${i + 1}. ${job.title} at ${job.company}\n   Location: ${job.location}\n   Source: ${job.source ?? "Unknown"}\n   Match: ${job.match_score}%\n   Reason: ${job.fit_summary || job.reason}\n   Apply: ${job.apply_link}`
     )
     .join("\n\n");
 

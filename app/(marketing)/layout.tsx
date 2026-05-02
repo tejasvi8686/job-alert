@@ -1,3 +1,5 @@
+import { SmoothScroll } from "@/components/landing/smooth-scroll";
+
 export default function MarketingLayout({
   children,
 }: {
@@ -5,7 +7,7 @@ export default function MarketingLayout({
 }) {
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground font-landing">
-      {children}
+      <SmoothScroll>{children}</SmoothScroll>
     </div>
   );
 }

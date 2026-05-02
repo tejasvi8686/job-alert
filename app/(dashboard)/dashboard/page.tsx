@@ -5,26 +5,28 @@ import TestEmailButton from "./test-email-button";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
 
-  if (!user) {
+  if (!claims) {
     redirect("/login");
   }
 
-  const { data: subscription } = await supabase
-    .from("user_roles")
-    .select("*")
-    .eq("user_id", user.id)
-    .single();
-
-  const { data: recentAlerts } = await supabase
-    .from("job_alert_history")
-    .select("id, sent_at, job_count, role")
-    .eq("user_id", user.id)
-    .order("sent_at", { ascending: false })
-    .limit(5);
+  const [{ data: subscription }, { data: recentAlerts }] = await Promise.all([
+    supabase
+      .from("user_roles")
+      .select(
+        "id, role, skill, location, created_at, experience_level, years_experience, job_type, min_salary, salary_currency, alert_frequency, min_match_score, max_jobs_per_email, alerts_paused"
+      )
+      .eq("user_id", claims.sub)
+      .maybeSingle(),
+    supabase
+      .from("job_alert_history")
+      .select("id, sent_at, job_count, role")
+      .eq("user_id", claims.sub)
+      .order("sent_at", { ascending: false })
+      .limit(5),
+  ]);
 
   if (!subscription) {
     return (
@@ -42,7 +44,7 @@ export default async function DashboardPage() {
               first digest will arrive tomorrow.
             </p>
             <div className="mt-8">
-              <SubscribeForm email={user.email!} />
+              <SubscribeForm email={claims.email!} />
             </div>
           </section>
 
@@ -98,14 +100,24 @@ export default async function DashboardPage() {
                 Overview
               </p>
               <h1 className="mt-2 font-heading text-3xl tracking-tight">
-                Your alerts are active
+                {subscription.alerts_paused
+                  ? "Your alerts are paused"
+                  : "Your alerts are active"}
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                Next delivery at 9:00 AM UTC tomorrow
+                {subscription.alerts_paused
+                  ? "Resume alerts in settings when you are ready"
+                  : "Next delivery at 9:00 AM UTC tomorrow"}
               </p>
             </div>
-            <span className="rounded-full border border-success/25 bg-success/10 px-3 py-1 text-xs font-medium text-success">
-              Active
+            <span
+              className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                subscription.alerts_paused
+                  ? "border-muted-foreground/20 bg-muted text-muted-foreground"
+                  : "border-success/25 bg-success/10 text-success"
+              }`}
+            >
+              {subscription.alerts_paused ? "Paused" : "Active"}
             </span>
           </div>
 
@@ -118,6 +130,15 @@ export default async function DashboardPage() {
             </div>
             <div className="rounded-xl border border-border/60 bg-background/70 p-4">
               <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground/70">
+                Experience
+              </p>
+              <p className="mt-1.5 text-sm">
+                {subscription.experience_level ?? "Mid"} ·{" "}
+                {subscription.years_experience ?? 2} yrs
+              </p>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-background/70 p-4">
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground/70">
                 Skills
               </p>
               <p className="mt-1.5 text-sm">{subscription.skill}</p>
@@ -127,6 +148,41 @@ export default async function DashboardPage() {
                 Location
               </p>
               <p className="mt-1.5 text-sm">{subscription.location}</p>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-background/70 p-4">
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground/70">
+                Job type
+              </p>
+              <p className="mt-1.5 text-sm">
+                {subscription.job_type ?? "Full-time"}
+              </p>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-background/70 p-4">
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground/70">
+                Salary
+              </p>
+              <p className="mt-1.5 text-sm">
+                {subscription.min_salary
+                  ? `${subscription.salary_currency ?? "USD"} ${subscription.min_salary}`
+                  : "Not set"}
+              </p>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-background/70 p-4">
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground/70">
+                Alert rules
+              </p>
+              <p className="mt-1.5 text-sm">
+                {subscription.min_match_score ?? 60}%+ ·{" "}
+                {subscription.max_jobs_per_email ?? 5} jobs
+              </p>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-background/70 p-4">
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground/70">
+                Frequency
+              </p>
+              <p className="mt-1.5 text-sm">
+                {subscription.alert_frequency ?? "Daily"}
+              </p>
             </div>
             <div className="rounded-xl border border-border/60 bg-background/70 p-4">
               <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground/70">

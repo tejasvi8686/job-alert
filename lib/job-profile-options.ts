@@ -201,6 +201,33 @@ export const LOCATION_OPTIONS = [
   "Dubai, UAE",
 ] as const;
 
+export const EXPERIENCE_LEVEL_OPTIONS = [
+  "Intern",
+  "Junior",
+  "Mid",
+  "Senior",
+  "Lead",
+] as const;
+
+export const JOB_TYPE_OPTIONS = [
+  "Full-time",
+  "Contract",
+  "Part-time",
+  "Internship",
+] as const;
+
+export const SALARY_CURRENCY_OPTIONS = ["USD", "INR", "EUR", "GBP"] as const;
+
+export const ALERT_FREQUENCY_OPTIONS = [
+  "Daily",
+  "Every 2 days",
+  "Weekly",
+] as const;
+
+export const MIN_MATCH_SCORE_OPTIONS = ["60", "70", "80", "90"] as const;
+
+export const MAX_JOBS_PER_EMAIL_OPTIONS = ["5", "10", "15", "20"] as const;
+
 export function getSkillOptionsForRole(role: string): readonly string[] {
   const normalizedRole = role.trim().toLowerCase();
   if (!normalizedRole) {

@@ -10,11 +10,10 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
 
-  if (!user) {
+  if (!claims) {
     redirect("/login");
   }
 
@@ -32,7 +31,7 @@ export default async function DashboardLayout({
           </div>
           <div className="px-5 pt-3 pb-2">
             <p className="truncate text-xs text-sidebar-foreground/50">
-              {user.email}
+              {claims.email}
             </p>
           </div>
           <SidebarNav />

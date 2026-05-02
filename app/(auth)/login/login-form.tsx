@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { sendOtp, verifyOtp } from "@/app/actions/auth";
 import { createClient } from "@/lib/supabase-browser";
@@ -15,18 +15,11 @@ const SOURCE_KEY = "ja_signup_source";
 
 export default function LoginForm() {
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => searchParams.get("email") ?? "");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"email" | "otp">("email");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const prefillEmail = searchParams.get("email");
-    if (prefillEmail) {
-      setEmail(prefillEmail);
-    }
-  }, [searchParams]);
 
   async function handleGoogleSignIn() {
     const source = searchParams.get("source") ?? "login_page";

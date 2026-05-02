@@ -4,19 +4,18 @@ import SettingsForm from "./settings-form";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
 
-  if (!user) {
+  if (!claims) {
     redirect("/login");
   }
 
   const { data: subscription } = await supabase
     .from("user_roles")
     .select("*")
-    .eq("user_id", user.id)
-    .single();
+    .eq("user_id", claims.sub)
+    .maybeSingle();
 
   if (!subscription) {
     redirect("/");
@@ -24,34 +23,60 @@ export default async function SettingsPage() {
 
   return (
     <div className="px-6 py-8 md:px-10 md:py-10">
-      <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,0.75fr)_minmax(0,1fr)]">
-        <section className="rounded-2xl border border-border/70 bg-card/72 p-6">
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Settings
-          </p>
-          <h1 className="mt-2 font-heading text-3xl tracking-tight">
-            Preferences
-          </h1>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Update your role, skill stack, or location filter. Changes take
-            effect on the next daily alert.
-          </p>
-          <div className="mt-6 rounded-xl border border-border/60 bg-background/60 p-4">
-            <p className="text-xs text-muted-foreground">
-              Signed in as
-            </p>
-            <p className="mt-1 truncate text-sm text-foreground/90">{user.email}</p>
+      <div className="mx-auto max-w-6xl">
+        <section className="mb-6 rounded-2xl border border-border/70 bg-card/80 p-6 shadow-[0_18px_40px_rgba(29,27,24,0.035)] md:p-7">
+          <div className="flex flex-wrap items-start justify-between gap-5">
+            <div className="max-w-2xl">
+              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                Settings
+              </p>
+              <h1 className="mt-2 font-heading text-3xl tracking-tight">
+                Job preferences
+              </h1>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                Tune the profile used by AI matching, salary filters, and email
+                delivery. Changes apply to the next alert.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="max-w-[260px] truncate rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground">
+                {claims.email}
+              </span>
+              <span
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
+                  subscription.alerts_paused
+                    ? "border-muted-foreground/20 bg-muted text-muted-foreground"
+                    : "border-success/25 bg-success/10 text-success"
+                }`}
+              >
+                {subscription.alerts_paused ? "Paused" : "Active"}
+              </span>
+            </div>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-border/70 bg-card/80 p-6 shadow-[0_18px_40px_rgba(29,27,24,0.04)] md:p-7">
-          <SettingsForm
-            email={user.email!}
-            role={subscription.role}
-            skill={subscription.skill}
-            location={subscription.location}
-          />
-        </section>
+        <SettingsForm
+          role={subscription.role}
+          profileName={subscription.profile_name ?? "Main profile"}
+          skill={subscription.skill}
+          location={subscription.location}
+          experienceLevel={subscription.experience_level ?? "Mid"}
+          yearsExperience={subscription.years_experience ?? 2}
+          jobType={subscription.job_type ?? "Full-time"}
+          minSalary={subscription.min_salary ?? ""}
+          salaryCurrency={subscription.salary_currency ?? "USD"}
+          alertFrequency={subscription.alert_frequency ?? "Daily"}
+          minMatchScore={subscription.min_match_score ?? 60}
+          maxJobsPerEmail={subscription.max_jobs_per_email ?? 5}
+          alertsPaused={subscription.alerts_paused ?? false}
+          resumeText={subscription.resume_text ?? ""}
+          linkedinUrl={subscription.linkedin_url ?? ""}
+          githubUrl={subscription.github_url ?? ""}
+          portfolioUrl={subscription.portfolio_url ?? ""}
+          preferredKeywords={subscription.preferred_keywords ?? ""}
+          excludedKeywords={subscription.excluded_keywords ?? ""}
+          hiddenCompanies={subscription.hidden_companies ?? ""}
+        />
       </div>
     </div>
   );

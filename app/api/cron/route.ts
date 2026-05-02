@@ -2,6 +2,12 @@ import { createClient } from "@supabase/supabase-js";
 import { fetchJobs, filterJobsWithAI } from "@/lib/jobs";
 import { sendJobEmail } from "@/lib/email";
 
+function getFrequencyWindowMs(frequency?: string | null) {
+  if (frequency === "Weekly") return 7 * 24 * 60 * 60 * 1000;
+  if (frequency === "Every 2 days") return 2 * 24 * 60 * 60 * 1000;
+  return 20 * 60 * 60 * 1000;
+}
+
 export async function GET(request: Request) {
   // Verify cron secret in production
   const authHeader = request.headers.get("authorization");
@@ -31,12 +37,43 @@ export async function GET(request: Request) {
 
   for (const sub of subscribers) {
     try {
-      const filtered = await filterJobsWithAI(
-        jobs,
-        sub.role,
-        sub.location,
-        sub.skill
-      );
+      if (sub.alerts_paused) {
+        continue;
+      }
+
+      const windowStart = new Date(
+        Date.now() - getFrequencyWindowMs(sub.alert_frequency)
+      ).toISOString();
+      const { data: recentSend } = await supabase
+        .from("job_alert_history")
+        .select("id")
+        .eq("user_id", sub.user_id)
+        .gte("sent_at", windowStart)
+        .limit(1);
+
+      if (recentSend && recentSend.length > 0) {
+        continue;
+      }
+
+      const filtered = await filterJobsWithAI(jobs, {
+        role: sub.role,
+        location: sub.location,
+        skill: sub.skill,
+        experienceLevel: sub.experience_level,
+        yearsExperience: sub.years_experience,
+        jobType: sub.job_type,
+        minSalary: sub.min_salary,
+        salaryCurrency: sub.salary_currency,
+        minMatchScore: sub.min_match_score,
+        maxJobsPerEmail: sub.max_jobs_per_email,
+        resumeText: sub.resume_text,
+        linkedinUrl: sub.linkedin_url,
+        githubUrl: sub.github_url,
+        portfolioUrl: sub.portfolio_url,
+        preferredKeywords: sub.preferred_keywords,
+        excludedKeywords: sub.excluded_keywords,
+        hiddenCompanies: sub.hidden_companies,
+      });
       if (filtered.length > 0) {
         await sendJobEmail(sub.email, sub.role, filtered, sub.id);
         await supabase.from("job_alert_history").insert({
