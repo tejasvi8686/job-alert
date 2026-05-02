@@ -70,6 +70,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 OPENAI_API_KEY=
 RESEND_API_KEY=
+EMAIL_FROM=JobAlert <alerts@yourdomain.com>
 CRON_SECRET=
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_SUPPORT_EMAIL=support@jobalert.app
@@ -101,6 +102,7 @@ npm run lint     # Run ESLint
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Server-only key for cron, history inserts, and privileged reads. |
 | `OPENAI_API_KEY` | Yes | Used to rank and filter jobs for each subscriber. |
 | `RESEND_API_KEY` | Yes | Sends job alert and test emails. |
+| `EMAIL_FROM` | Yes | Verified sender address, for example `JobAlert <alerts@yourdomain.com>`. |
 | `CRON_SECRET` | Recommended | Protects the cron endpoint in production. |
 | `NEXT_PUBLIC_SITE_URL` | Recommended | Base URL used for unsubscribe links. |
 | `NEXT_PUBLIC_SUPPORT_EMAIL` | Optional | Support email displayed on marketing pages. |

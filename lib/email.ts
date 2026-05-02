@@ -2,6 +2,8 @@ import { Resend } from "resend";
 import type { FilteredJob } from "./jobs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const EMAIL_FROM =
+  process.env.EMAIL_FROM ?? "JobAlert <onboarding@resend.dev>";
 
 function getMatchColor(score: string | number): string {
   const n = typeof score === "string" ? parseInt(score, 10) : score;
@@ -128,7 +130,7 @@ export async function sendJobEmail(
     .join("\n\n");
 
   await resend.emails.send({
-    from: "Job Alerts <onboarding@resend.dev>",
+    from: EMAIL_FROM,
     to: email,
     subject: "Top Jobs for You Today",
     html: buildEmailHtml(role, jobs, unsubscribeUrl),
