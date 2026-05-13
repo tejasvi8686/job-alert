@@ -30,7 +30,15 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-border/80 bg-muted/35">
+    <footer className="relative overflow-hidden border-t border-border/80 bg-muted/35">
+      {/* Subtle background glow — kept small so it doesn't overwhelm the footer */}
+      <div
+        className="pointer-events-none absolute left-1/2 top-0 h-[200px] w-[400px] -translate-x-1/2 -translate-y-1/2"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(184,80,58,0.12) 0%, rgba(184,80,58,0) 70%)",
+        }}
+      />
       <div className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
