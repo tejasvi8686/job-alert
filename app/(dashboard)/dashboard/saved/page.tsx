@@ -27,15 +27,7 @@ export default async function SavedJobsPage() {
           Jobs you want to revisit and apply to later
         </p>
 
-        {error ? (
-          <div className="mt-10 rounded-2xl border border-border/70 bg-card/70 p-8">
-            <p className="text-sm font-medium">Saved jobs are not ready yet</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Run the SQL in <code>database/saved-jobs.sql</code> in Supabase,
-              then refresh this page.
-            </p>
-          </div>
-        ) : !jobs || jobs.length === 0 ? (
+        {!jobs || jobs.length === 0 ? (
           <div className="mt-10 rounded-2xl border border-border/70 bg-card/70 p-10 text-center">
             <p className="text-sm text-muted-foreground/60">
               No saved jobs yet. Save jobs from your alert history to build a

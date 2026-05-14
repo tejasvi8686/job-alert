@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import SettingsForm from "./settings-form";
+import DeleteAccountSection from "./delete-account-section";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -77,6 +78,8 @@ export default async function SettingsPage() {
           excludedKeywords={subscription.excluded_keywords ?? ""}
           hiddenCompanies={subscription.hidden_companies ?? ""}
         />
+
+        <DeleteAccountSection />
       </div>
     </div>
   );

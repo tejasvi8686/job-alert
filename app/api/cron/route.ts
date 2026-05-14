@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { fetchJobs, filterJobsWithAI } from "@/lib/jobs";
 import { sendJobEmail } from "@/lib/email";
+import { logError } from "@/lib/logger";
 
 function getFrequencyWindowMs(frequency?: string | null) {
   if (frequency === "Weekly") return 7 * 24 * 60 * 60 * 1000;
@@ -87,7 +88,7 @@ export async function GET(request: Request) {
         sent++;
       }
     } catch (err) {
-      console.error(`Failed for ${sub.email}:`, err);
+      logError("cron", err, { subscriberId: sub.id, email: sub.email });
     }
   }
 

@@ -1,6 +1,14 @@
 import { createClient } from "@/lib/supabase-server";
+import { rateLimit } from "@/lib/rate-limit";
+import { logError } from "@/lib/logger";
 
 export async function POST(request: Request) {
+  const ip = request.headers.get("x-forwarded-for") || "unknown";
+  const { ok } = rateLimit(`subscribe:${ip}`, 5, 60_000);
+  if (!ok) {
+    return Response.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const supabase = await createClient();
 
   const {
@@ -62,6 +70,7 @@ export async function POST(request: Request) {
         { status: 409 }
       );
     }
+    logError("subscribe", error, { userId: user.id });
     return Response.json({ error: error.message }, { status: 500 });
   }
 

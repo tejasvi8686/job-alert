@@ -13,12 +13,21 @@ import { trackEvent } from "@/lib/analytics";
 const START_KEY = "ja_signup_started_at";
 const SOURCE_KEY = "ja_signup_source";
 
+function getAuthCallbackUrl() {
+  const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  const baseUrl = configuredUrl
+    ? configuredUrl.replace(/\/$/, "")
+    : window.location.origin;
+
+  return `${baseUrl}/auth/callback`;
+}
+
 export default function LoginForm() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState(() => searchParams.get("email") ?? "");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"email" | "otp">("email");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(() => searchParams.get("error") ?? "");
   const [loading, setLoading] = useState(false);
 
   async function handleGoogleSignIn() {
@@ -34,7 +43,7 @@ export default function LoginForm() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: getAuthCallbackUrl(),
       },
     });
   }

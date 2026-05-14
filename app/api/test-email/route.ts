@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase-server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { fetchJobs, filterJobsWithAI } from "@/lib/jobs";
 import { sendJobEmail } from "@/lib/email";
+import { logError } from "@/lib/logger";
 
 export async function POST() {
   const supabase = await createClient();
@@ -102,7 +103,7 @@ export async function POST() {
 
     return Response.json({ success: true, jobCount: filtered.length });
   } catch (err) {
-    console.error("Test email failed:", err);
+    logError("test-email", err, { userId: user.id });
     return Response.json(
       { error: "Failed to send test email. Please try again." },
       { status: 500 }

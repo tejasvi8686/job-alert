@@ -1,6 +1,17 @@
 import { createClient } from "@supabase/supabase-js";
+import { rateLimit } from "@/lib/rate-limit";
+import { logError } from "@/lib/logger";
 
 export async function GET(request: Request) {
+  const ip = request.headers.get("x-forwarded-for") || "unknown";
+  const { ok } = rateLimit(`unsub:${ip}`, 10, 60_000);
+  if (!ok) {
+    return new Response(html("Too many requests. Please try again later."), {
+      status: 429,
+      headers: { "Content-Type": "text/html" },
+    });
+  }
+
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
 
@@ -22,6 +33,7 @@ export async function GET(request: Request) {
     .eq("id", id);
 
   if (error) {
+    logError("unsubscribe", error, { subscriberId: id });
     return new Response(html("Something went wrong. Please try again."), {
       status: 500,
       headers: { "Content-Type": "text/html" },
